@@ -1,21 +1,26 @@
 import os
-from typing import *
+from typing import List
 
 from config import Config
 
 
 class PhoneDirectory:
-    __PHONE_DIRECTORY_FILE = Config.PHONE_DIRECTORY_FILE
-    __FIELDS = Config.FIELDS
+    """Класс для управления телефонным справочником."""
+
+    __PHONE_DIRECTORY_FILE: str = Config.PHONE_DIRECTORY_FILE
+    __FIELDS: List[str] = Config.FIELDS
     __instance = None
     __entries = []
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args, **kwargs) -> "PhoneDirectory":
+        """Реализация паттерна Singleton"""
         if cls.__instance is None:
             cls.__instance = super().__new__(cls)
         return cls.__instance
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Инициализирует экземпляр класса PhoneDirectory.
+        Проверяет также, есть ли уже файл с записями, и если нет, то создает пустой."""
         if not os.path.exists(self.__PHONE_DIRECTORY_FILE):
             with open(self.__PHONE_DIRECTORY_FILE, "w"):
                 pass
@@ -25,11 +30,13 @@ class PhoneDirectory:
         super().__init__()
 
     def _save_file(self) -> None:
+        """Сохраняет записи в файл."""
         with open(self.__PHONE_DIRECTORY_FILE, "w") as file:
             for entry in self.__entries:
                 file.write(";".join(entry) + "\n")
 
-    def print_directory_page(self, page_num, page_size) -> None:
+    def print_directory_page(self, page_num: int, page_size: int) -> None:
+        """Выводит на экран заданную страницу справочника."""
         start_index = (page_num - 1) * page_size
         end_index = min(start_index + page_size, len(self.__entries))
         for entry in self.__entries[start_index:end_index]:
@@ -38,10 +45,12 @@ class PhoneDirectory:
 
     @staticmethod
     def _print_entry(entry: List[str]) -> None:
+        """Выводит одну запись справочника на экран."""
         for field, value in zip(Config.FIELDS, entry):
             print(f"{field}: {value}")
 
     def add_entry_and_save_file(self) -> None:
+        """Добавляет новую запись в справочник и сохраняет его."""
         new_entry = []
         for field in self.__FIELDS:
             value = input(f"Введите {field}: ")
@@ -51,6 +60,7 @@ class PhoneDirectory:
         print("Запись добавлена.")
 
     def edit_entry(self) -> None:
+        """Редактирует выбранную запись в справочнике."""
         query = input("Введите фамилию для редактирования: ")
         found_entries = []
         for entry in self.__entries:
@@ -80,7 +90,8 @@ class PhoneDirectory:
         self._save_file()
         print("Запись отредактирована.")
 
-    def search_entries(self):
+    def search_entries(self) -> None:
+        """Ищет записи в справочнике по заданному критерию."""
         query = input("Введите фамилию для поиска: ")
         found_entries = []
         for entry in self.__entries:
